@@ -1,1 +1,55 @@
+name: Build Android APK
 
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Lerza Player APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Grant Execute Permission to Gradle Wrapper
+        run: |
+          if [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
+          fi
+
+      - name: Build APK with Gradle
+        run: |
+          ./gradlew clean assembleDebug --no-daemon --stacktrace
+
+      - name: Locate and Collect Generated APK
+        run: |
+          mkdir -p release-output
+          APK_PATH=$(find . -type f -name "*.apk" | head -n 1)
+          if [ -n "$APK_PATH" ]; then
+            echo "Found APK at: $APK_PATH"
+            cp "$APK_PATH" release-output/Lerza-Player-v1.0.1-Debug.apk
+            ls -lh release-output/Lerza-Player-v1.0.1-Debug.apk
+          else
+            echo "Error: No APK file found after build!"
+            exit 1
+          fi
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lerza-Player-v1.0.1-Debug-APK
+          path: release-output/Lerza-Player-v1.0.1-Debug.apk
+          retention-days: 30
