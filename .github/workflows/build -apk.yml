@@ -18,6 +18,13 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Unzip Zip File
+        run: |
+          if [ -f "lerza-player-native-android.zip" ]; then
+            echo "Unzipping lerza-player-native-android.zip..."
+            unzip -o lerza-player-native-android.zip
+          fi
+
       - name: Set up Java JDK 17
         uses: actions/setup-java@v4
         with:
